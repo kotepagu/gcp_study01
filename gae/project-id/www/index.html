@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+
+        <p v-if="errored" v-cloak>{{ error }}</p>
+        <p v-if="loading" v-cloak>Loading...</p>
+
+        <div v-else>
+            <ul>
+                <li v-for="todo in todos" v-cloak>{{todo.title}}</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.19.2/dist/axios.min.js"></script>
+
+    <script>
+
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    loading: true,
+                    errored: false,
+                    error: null,
+                    todos: null,
+                }
+            },
+            created() {
+                let vm = this
+                axios.get('https://[API-URL]/todos/')
+                    .then(response => {
+                        vm.todos = response.data
+                    })
+                    .catch(err => {
+                        vm.errored = true,
+                        vm.error = err
+                    })
+                    .finally(() => vm.loading = false)
+            }
+        })
+
+    </script>
+
+</body>
+
+</html>
