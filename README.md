@@ -22,16 +22,22 @@ OS： CentOS 7
 ```
 
 2. ファイアウォール ルール  
+```
     ターゲットタグ: mysql-server  
     ソースIP の範囲： 0.0.0.0/0  
     プロトコルとポート： tcp:3306
+```
 
 3. MySQLをインストール  
+1 で作成した VMインスタンス に ssh で接続し、DBを構築する
 ```
 $ sudo rpm -Uvh http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm
 $ sudo yum -y install mysql-community-server
 $ sudo /usr/bin/systemctl start mysqld
 $ sudo mysql_secure_installation
+$ mysql -u root -p
+Enter password: # パスワードを入力 
+mysql> create database [DB_NAME];
 ```
 
 ## Cloud Run
@@ -41,28 +47,36 @@ $ sudo mysql_secure_installation
 ```
 $ gcloud components update
 ```
-4. db.py の接続先を変更する。
-```
+4. サンプルプログラム(cloud-run/todos/db.py)のDB接続先を変更する。
+```python:db.py
 SQLALCHEMY_DATABASE_URI = "mysql://user:password@mysqlserver/db"
 ```
-5. アプリをコンテナ化して Container Registry にアップロードする
+5. サンプルアプリのテーブルを作成
+```
+$ cd cloud-run/todos
+$ python db.py
+```
+6. アプリをコンテナ化して Container Registry にアップロードする
 ```
 $ cd gcp_study01/cloud-run/todos
 $ gcloud builds submit --tag gcr.io/[PROJECT-ID]/gcp_study01
 ```
-6. Cloud Run へデプロイ
+7. Cloud Run へデプロイ
 ```
 gcloud run deploy --image gcr.io/[PROJECT-ID]/gcp_study01 --platform managed
 ```
 
 ## App Engine
-1. 静的ウェブサイトの作成
+1. 静的ウェブサイトの作成  
+
+GAEのルートディレクトリはプロジェクトIDにする必要があるため、`project-id`ディレクトリ名をプロジェクトIDに変更する。
 ```
 $ cd gcp_study01/gae
 $ mv project-id [PROJECT-ID]
 ```
-2. API の URL を 変更
-```
+2. HTML(www/index.html)内のAPI呼び出しを行っている箇所の URL を変更  
+`[API-URL]`に、`Cloud Run`のサービスの詳細に表示されたURLを設定する。
+```html:index.html
 https://[API-URL]/todos
 ```
 3. App Engine へデプロイ
