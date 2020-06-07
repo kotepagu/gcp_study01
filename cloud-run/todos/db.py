@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 #SQLALCHEMY_DATABASE_URI = "sqlite:///./test.db"
 #SQLALCHEMY_DATABASE_URI = "postgresql://user:password@postgresserver/db"
-SQLALCHEMY_DATABASE_URI = "mysql://user:password@mysqlserver/db"
+SQLALCHEMY_DATABASE_URI = "mysql://user:password@mysqlserver/db?charset=utf8"
 
 engine = create_engine(
 #    SQLALCHEMY_DATABASE_URI, connect_args={"check_same_thread": False}, echo=True

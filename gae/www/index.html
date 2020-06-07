@@ -3,24 +3,47 @@
 
 <head>
     <meta charset="UTF-8">
-    <style>
-        [v-cloak] {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="./main.css">
 </head>
 
 <body>
     <div id="app">
 
-        <p v-if="errored" v-cloak>{{ error }}</p>
-        <p v-if="loading" v-cloak>Loading...</p>
-
-        <div v-else>
-            <ul>
-                <li v-for="todo in todos" v-cloak>{{todo.title}}</li>
-            </ul>
+        <div>
+            <table>
+                <thead v-pre>
+                    <tr>
+                        <th class="id">ID</th>
+                        <th class="comment">Title</th>
+                        <th class="state">状態</th>
+                        <th class="button">-</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in todos" v-bind:key="item.id" v-bind:class="{done:item.done}">
+                        <th>{{ item.id }}</th>
+                        <td>{{ item.title }}</td>
+                        <td class="state">
+                            <button v-on:click="doChangeState(item)">
+                                {{ labels[item.done] }}
+                            </button>
+                        </td>
+                        <td class="button">
+                            <button v-on:click="doRemove(item)">
+                                削除
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+        <br />
+        <h3>新しいToDo追加</h3>
+        <form class="add-form" v-on:submit.prevent="doAdd">
+            Title <input type="text" ref="title">
+            <button type="submit">追加</button>
+        </form>
+
 
     </div>
 
@@ -28,6 +51,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios@0.19.2/dist/axios.min.js"></script>
 
     <script>
+        const baseURL = 'https://[API-URL]'
 
         new Vue({
             el: '#app',
@@ -37,19 +61,78 @@
                     errored: false,
                     error: null,
                     todos: null,
+                    options: [
+                        { value: false, label: '作業中' },
+                        { value: true, label: '完了' }
+                    ]
+
                 }
             },
             created() {
-                let vm = this
-                axios.get('https://[API-URL]/todos/')
-                    .then(response => {
-                        vm.todos = response.data
+                this.doGet()
+            },
+            computed: {
+                labels() {
+                    return this.options.reduce(function (a, b) {
+                        return Object.assign(a, { [b.value]: b.label })
+                    }, {})
+                }
+            },
+            methods: {
+                doGet: function () {
+                    let vm = this
+                    axios.get(baseURL + '/todos/')
+                        .then(response => {
+                            vm.todos = response.data
+                        })
+                        .catch(err => {
+                            vm.errored = true,
+                                vm.error = err
+                        })
+                        .finally(() => vm.loading = false)
+                },
+
+                doAdd: function (event, value) {
+                    let vm = this
+                    var title = this.$refs.title
+                    if (!title.value.length) {
+                        return
+                    }
+                    axios.post(baseURL + '/todos/', {
+                        title: title.value,
+                        done: false
                     })
-                    .catch(err => {
-                        vm.errored = true,
-                        vm.error = err
+                        .catch(err => {
+                            vm.errored = true,
+                                vm.error = err
+                        })
+                        .finally(() => vm.doGet())
+                    title.value = ''
+                },
+
+                doChangeState: function (item) {
+                    let vm = this
+                    axios.put(baseURL + '/todos/' + item.id, {
+                        title: item.title,
+                        done: !item.done
                     })
-                    .finally(() => vm.loading = false)
+                        .catch(err => {
+                            vm.errored = true,
+                                vm.error = err
+                        })
+                        .finally(() => vm.doGet())
+                },
+
+                doRemove: function (item) {
+                    let vm = this
+                    axios.delete(baseURL + '/todos/' + item.id)
+                        .catch(err => {
+                            vm.errored = true,
+                                vm.error = err
+                        })
+                        .finally(() => vm.doGet())
+                }
+
             }
         })
 

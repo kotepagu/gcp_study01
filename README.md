@@ -49,7 +49,7 @@ Remove test database and access to it? [Y/n]  # Yを入力
 Reload privilege tables now? [Y/n] # Yを入力
 $ mysql -u root -p
 Enter password: # root のパスワードを入力 
-mysql> create database gcp_study;
+mysql> CREATE DATABASE gcp_study CHARACTER SET utf8;
 mysql> CREATE USER gcp_study IDENTIFIED BY '[任意のパスワード]';
 mysql> GRANT ALL PRIVILEGES ON *.* TO 'gcp_study'@'%';
 ```
@@ -65,9 +65,9 @@ $ git clone https://github.com/kotepagu/gcp_study01.git
 $ cd gcp_study01/cloud-run/todos
 $ vi db.py
   ・・・
-  SQLALCHEMY_DATABASE_URI = "mysql://user:password@mysqlserver/db"
+  SQLALCHEMY_DATABASE_URI = "mysql://user:password@mysqlserver/db?charset=utf8"
   ↓ 例) MySQLをインストールしたVMインスタンスの外部IPが「1.2.3.4」、gcp_studyのパスワードが'pass'の場合
-  SQLALCHEMY_DATABASE_URI = "mysql://gcp_study:pass@1.2.3.4/gcp_study"
+  SQLALCHEMY_DATABASE_URI = "mysql://gcp_study:pass@1.2.3.4/gcp_study?charset=utf8"
   ・・・
 ```
 4. サンプルアプリのテーブルを作成
@@ -98,7 +98,7 @@ Allow unauthenticated invocations to [gcpstudy01] (y/N)? # yを入力
 $ cd ~/gcp_study01/gae
 $ vi www/index.html
 ・・・
-axios.get('https://[API-URL]/todos/')
+const baseURL = 'https://[API-URL]'
 ・・・
 ```
 3. App Engine へデプロイ
